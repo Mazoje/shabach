@@ -335,7 +335,7 @@ export default function ServicesPage() {
                 </div>
 
                 <a 
-                  href="#contact" 
+                  href="/contact" 
                   onClick={() => setActiveModalService(null)}
                   className="px-6 py-3 rounded-full text-xs font-semibold bg-slate-900 text-white hover:bg-slate-800 transition text-center shadow-sm"
                 >
@@ -365,7 +365,7 @@ export default function ServicesPage() {
           </div>
 
           <a 
-            href="#contact" 
+            href="/contact" 
             className="relative z-10 px-8 py-4 rounded-full bg-white text-slate-900 hover:bg-slate-100 transition text-xs font-semibold flex items-center gap-2 shrink-0 shadow-lg"
           >
             Schedule Consultation <ArrowRight className="w-4 h-4" />
