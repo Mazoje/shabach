@@ -360,7 +360,7 @@ export default function ServicesPage() {
               <span className="font-serif italic font-normal">Architectural Landmark</span>
             </h2>
             <p className="text-xs md:text-sm text-slate-300 font-light leading-relaxed">
-              Book a direct session with Arc. Shabach or our Head of Real Estate Advisory to tailor a bespoke execution plan for your estate or portfolio.
+              Book a direct session with Arc. Edirin or our Head of Real Estate Advisory to tailor a bespoke execution plan for your estate or portfolio.
             </p>
           </div>
 
