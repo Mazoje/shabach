@@ -199,19 +199,17 @@ export default function AdminClient({ initialProjects, initialUnits, initialMile
       return;
     }
 
-    const res = await createUnitAction({
-      unitNumber: newUnitForm.unitNumber,
-      propertyId: propertyId,
-      type: newUnitForm.type,
-      bedrooms: Number(newUnitForm.bedrooms),
-      bathrooms: Number(newUnitForm.bathrooms),
-      sqm: Number(newUnitForm.sqm),
-      floor: newUnitForm.floor,
-      orientation: newUnitForm.orientation,
-      price: Number(newUnitForm.price),
-      status: newUnitForm.status,
-      interiorPackage: newUnitForm.interiorPackage,
-    });
+   const form = newUnitForm as any;
+
+const res = await createUnitAction({
+  unitNumber: form.unitNumber,
+  propertyId: propertyId,
+  bedrooms: Number(form.bedrooms),
+  bathrooms: Number(form.bathrooms),
+  sqft: Number(form.sqft || form.sqm || 0),
+  salePrice: Number(form.price),
+  status: form.status,
+} as any);
 
     if (res.success && res.data) {
       setUnits([res.data, ...units]);
