@@ -29,15 +29,17 @@ export async function getAdminData() {
       sqft: p.sqft ? Number(p.sqft) : 0,
       units: (p.units || []).map((u: any) => ({
         ...u,
-        price: u.price ? Number(u.price) : 0,
-        sqm: u.sqm ? Number(u.sqm) : 0,
+        salePrice: u.salePrice ? Number(u.salePrice) : 0,
+        nightlyRate: u.nightlyRate ? Number(u.nightlyRate) : 0,
+        sqft: u.sqft ? Number(u.sqft) : 0,
       })),
     }));
 
     const units = (unitsRaw || []).map((u: any) => ({
       ...u,
-      price: u.price ? Number(u.price) : 0,
-      sqm: u.sqm ? Number(u.sqm) : 0,
+      salePrice: u.salePrice ? Number(u.salePrice) : 0,
+      nightlyRate: u.nightlyRate ? Number(u.nightlyRate) : 0,
+      sqft: u.sqft ? Number(u.sqft) : 0,
       property: u.property
         ? {
             ...u.property,
@@ -93,7 +95,7 @@ export async function createPropertyAction(data: {
         coverImage: data.coverImage,
         gallery: data.gallery,
         city: data.city,
-        state: data.city, // Supplied required state field
+        state: data.city,
         country: data.country,
         address: `${data.city}, ${data.country}`,
         zipCode: '100001',
@@ -192,39 +194,28 @@ export async function deletePropertyAction(id: string) {
 export async function createUnitAction(data: {
   unitNumber: string;
   propertyId: string;
-  type: string;
   bedrooms: number;
   bathrooms: number;
-  sqm: number;
-  floor: string;
-  orientation: string;
-  price: number;
+  sqft: number;
+  salePrice: number;
   status: string;
-  interiorPackage: string;
 }) {
   try {
     const unit = await prisma.unit.create({
       data: {
         unitNumber: data.unitNumber,
         propertyId: data.propertyId,
-        type: data.type,
         bedrooms: data.bedrooms,
         bathrooms: data.bathrooms,
-        sqm: data.sqm,
-        floor: data.floor,
-        orientation: data.orientation,
-        price: data.price,
-        status: data.status as any,
-        interiorPackage: data.interiorPackage,
-        blueprintCode: `CAD-${data.unitNumber.replace(/\s+/g, '-')}-REV1.pdf`,
-        milestone: 'Foundation & Substructure',
-        completionPct: 25,
+        sqft: data.sqft,
+        salePrice: data.salePrice,
+        status: (data.status || 'AVAILABLE') as any,
       } as any,
       include: { property: true },
     });
 
     revalidatePath('/admin');
-    return { success: true, data: { ...unit, price: Number(unit.price), sqm: Number(unit.sqm) } };
+    return { success: true, data: { ...unit, salePrice: Number(unit.salePrice), sqft: Number(unit.sqft) } };
   } catch (error) {
     console.error('Failed to create unit:', error);
     return { success: false, error: 'Failed to save unit to database.' };
@@ -240,7 +231,7 @@ export async function updateUnitStatusAction(unitId: string, status: string) {
     });
 
     revalidatePath('/admin');
-    return { success: true, data: { ...unit, price: Number(unit.price), sqm: Number(unit.sqm) } };
+    return { success: true, data: { ...unit, salePrice: Number(unit.salePrice), sqft: Number(unit.sqft) } };
   } catch (error) {
     console.error('Failed to update unit status:', error);
     return { success: false, error: 'Failed to update unit status.' };
