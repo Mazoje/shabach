@@ -78,8 +78,8 @@ export default function Footer() {
               </a>
               <a href="#" className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition">
                 <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 10.9v8.37H9.25V10.9H6.46M7.86 6.6a1.49 1.49 0 0 0-1.5 1.5 1.5 1.5 0 0 0 1.5 1.5 1.49 1.49 0 0 0 1.5-1.5 1.49 1.49 0 0 0-1.5-1.5z"/></svg>
-              </a>
-            </div>
+              </a>            
+            </div>          
           </div>
 
           {/* Quick Links */}
@@ -126,18 +126,29 @@ export default function Footer() {
               </li>
             </ul>
           </div>
-
         </div>
 
-        {/* Bottom Bar */}
-        <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between text-[11px] text-slate-500 gap-4">
-          <p>© {new Date().getFullYear()} Shabach Empire Real Estate. All rights reserved.</p>
-          <div className="flex gap-6">
-            <Link href="/privacy-policy" className="hover:text-slate-400 transition">Privacy Policy</Link>
-            <Link href="/terms-of-service" className="hover:text-slate-400 transition">Terms of Service</Link>
-            <Link href="/cookie-settings" className="hover:text-slate-400 transition">Cookie Settings</Link>
-          </div>
-        </div>
+      {/* Bottom Bar */}
+<div className="pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between text-[11px] text-slate-500 gap-4 text-center md:text-left">
+  <p>© {new Date().getFullYear()} Shabach Empire Real Estate. All rights reserved.</p>
+  
+  <div className="flex flex-wrap items-center justify-center md:justify-end gap-4 md:gap-6">
+    <Link
+      href="/admin/properties"
+      className="px-4 py-2 rounded-full text-xs font-semibold bg-white text-slate-900 hover:bg-slate-100 transition flex items-center gap-1.5 shadow-sm"
+    >
+      Admin Panel
+    </Link>
+
+    <Link href="/privacy-policy" className="hover:text-slate-400 transition">
+      Privacy Policy
+    </Link>
+    
+    <Link href="/terms-of-service" className="hover:text-slate-400 transition">
+      Terms of Service
+    </Link>
+  </div>
+</div>
 
       </div>
     </footer>

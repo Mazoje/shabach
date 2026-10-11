@@ -1,26 +1,15 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   Building2, 
   Search, 
   MapPin, 
-  Home, 
-  DollarSign, 
   Bed, 
   Bath, 
   Maximize2, 
-  ArrowRight, 
-  ShieldCheck, 
-  Award, 
-  Globe2, 
   Heart,
-  Menu,
   X,
-  PhoneCall,
-  Mail,
-  ArrowUpRight,
-  Send,
   Plus,
   Trash2,
   Edit,
@@ -28,16 +17,16 @@ import {
   Compass,
   Layers,
   CheckCircle2,
-  SlidersHorizontal,
-  Eye,
-  Lock,
+  ArrowUpRight,
+  ShieldCheck,
+  Calendar,
   Sparkles
 } from 'lucide-react';
 
-// Property interface model
 interface Property {
-  id: number;
+  id: string | number;
   title: string;
+  slug?: string;
   location: string;
   price: string;
   type: 'buy' | 'rent' | 'offplan';
@@ -47,92 +36,37 @@ interface Property {
   baths: number;
   sqft: string;
   image: string;
+  images?: string[];
   description: string;
+  amenities?: { id: string; name: string }[];
   featured?: boolean;
 }
 
-// Initial Property Data
-const INITIAL_PROPERTIES: Property[] = [
-  {
-    id: 1,
-    title: "Skyline Residences",
-    location: "Ikoyi, Lagos",
-    price: "$1,850,000",
-    type: "buy",
-    category: "Apartment",
-    tag: "Ready to Move",
-    beds: 3,
-    baths: 3,
-    sqft: "1,850 Sq.Ft",
-    image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=1200",
-    description: "Ultra-luxury high-rise luxury apartment overlooking the Atlantic ocean with floor-to-ceiling panoramic glass windows and smart home automation.",
-    featured: true
-  },
-  {
-    id: 2,
-    title: "The Green Villas",
-    location: "Banana Island, Lagos",
-    price: "$2,400,000",
-    type: "buy",
-    category: "Villa",
-    tag: "Premium",
-    beds: 4,
-    baths: 4,
-    sqft: "2,600 Sq.Ft",
-    image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&q=80&w=1200",
-    description: "Modern eco-conscious luxury villa featuring zero-emission solar systems, private infinity edge pool, and lush manicured gardens.",
-    featured: true
-  },
-  {
-    id: 3,
-    title: "Shabach Heights",
-    location: "Victoria Island, Lagos",
-    price: "$1,200,000",
-    type: "offplan",
-    category: "Penthouse",
-    tag: "New Launch",
-    beds: 2,
-    baths: 2,
-    sqft: "1,200 Sq.Ft",
-    image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=1200",
-    description: "Exclusive luxury off-plan penthouse development featuring private rooftop helipad access, concierge services, and bespoke Italian interior finishes.",
-    featured: true
-  },
-  {
-    id: 4,
-    title: "Lekki Waterfront Estate",
-    location: "Lekki Phase 1, Lagos",
-    price: "$8,000 / month",
-    type: "rent",
-    category: "Villa",
-    tag: "For Rent",
-    beds: 5,
-    baths: 5,
-    sqft: "3,100 Sq.Ft",
-    image: "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&q=80&w=1200",
-    description: "Spacious waterfront duplex offering direct jetty access, modern security installation, private cinema room, and luxury swimming pool.",
-    featured: false
-  }
-];
-
-export default function ShabachPropertyAndArchitecturalPage() {
+export default function PropertiesClient({ initialProperties }: { initialProperties: Property[] }) {
   // Navigation & View Modes
   const [activeTab, setActiveTab] = useState<'buy' | 'rent' | 'offplan' | 'all'>('all');
   const [isAdminMode, setIsAdminMode] = useState<boolean>(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const [favorites, setFavorites] = useState<number[]>([]);
+  const [favorites, setFavorites] = useState<(string | number)[]>([]);
 
   // Search & Filters
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   
-  // Property State Management (Add, Edit, Delete)
-  const [properties, setProperties] = useState<Property[]>(INITIAL_PROPERTIES);
+  // Property State Management
+  const [properties, setProperties] = useState<Property[]>(initialProperties);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
-  const [editingPropertyId, setEditingPropertyId] = useState<number | null>(null);
+  const [editingPropertyId, setEditingPropertyId] = useState<string | number | null>(null);
 
-  // Property Form Fields
+  // Gallery Active Image State inside Modal
+  const [activeModalImage, setActiveModalImage] = useState<string>('');
+
+  // Inquiry Form State inside Modal
+  const [inquirySubmitted, setInquirySubmitted] = useState(false);
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+
+  // Property Form Fields (Admin)
   const [formTitle, setFormTitle] = useState('');
   const [formLocation, setFormLocation] = useState('');
   const [formPrice, setFormPrice] = useState('');
@@ -145,25 +79,18 @@ export default function ShabachPropertyAndArchitecturalPage() {
   const [formImage, setFormImage] = useState('');
   const [formDescription, setFormDescription] = useState('');
 
-  // Architectural Consultation Form State
-  const [archConsultName, setArchConsultName] = useState('');
-  const [archConsultEmail, setArchConsultEmail] = useState('');
-  const [archConsultScope, setArchConsultScope] = useState('Residential Architecture');
-  const [consultSubmitted, setConsultSubmitted] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 30);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const toggleFavorite = (id: number) => {
+  const toggleFavorite = (id: string | number) => {
     setFavorites(prev => 
       prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
     );
   };
 
-  // Property Actions: Create or Update
+  const handleOpenModal = (prop: Property) => {
+    setSelectedProperty(prop);
+    setActiveModalImage(prop.image);
+    setInquirySubmitted(false);
+  };
+
   const handleSaveProperty = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formTitle || !formLocation || !formPrice) {
@@ -174,7 +101,6 @@ export default function ShabachPropertyAndArchitecturalPage() {
     const defaultImage = formImage.trim() || "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=1200";
 
     if (editingPropertyId !== null) {
-      // Update Existing
       setProperties(prev => prev.map(p => p.id === editingPropertyId ? {
         ...p,
         title: formTitle,
@@ -191,7 +117,6 @@ export default function ShabachPropertyAndArchitecturalPage() {
       } : p));
       setEditingPropertyId(null);
     } else {
-      // Add New
       const newProp: Property = {
         id: Date.now(),
         title: formTitle,
@@ -210,7 +135,6 @@ export default function ShabachPropertyAndArchitecturalPage() {
       setProperties([newProp, ...properties]);
     }
 
-    // Reset Form
     resetForm();
   };
 
@@ -230,7 +154,7 @@ export default function ShabachPropertyAndArchitecturalPage() {
     window.scrollTo({ top: 400, behavior: 'smooth' });
   };
 
-  const handleDeleteProperty = (id: number) => {
+  const handleDeleteProperty = (id: string | number) => {
     if (confirm("Are you sure you want to delete this property?")) {
       setProperties(prev => prev.filter(p => p.id !== id));
       if (selectedProperty?.id === id) setSelectedProperty(null);
@@ -261,9 +185,8 @@ export default function ShabachPropertyAndArchitecturalPage() {
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] text-[#121820] font-sans antialiased selection:bg-slate-200 selection:text-[#121820]">
-
-    
-      {/* 2. HERO HEADER */}
+      
+      {/* HERO HEADER */}
       <section className="relative pt-44 pb-16 bg-[#0D131A] text-white overflow-hidden">
         <div className="absolute inset-0 z-0 opacity-30 bg-[url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=2000')] bg-cover bg-center" />
         <div className="absolute inset-0 z-0 bg-gradient-to-t from-[#0D131A] via-[#0D131A]/70 to-transparent" />
@@ -284,7 +207,7 @@ export default function ShabachPropertyAndArchitecturalPage() {
         </div>
       </section>
 
-      {/* 3. ADMIN MANAGEMENT FORM (IF ADMIN MODE ACTIVE) */}
+      {/* ADMIN MANAGEMENT FORM */}
       {isAdminMode && (
         <section id="admin-portal" className="py-12 px-6 bg-slate-900 text-white border-y border-emerald-500/30">
           <div className="max-w-7xl mx-auto">
@@ -338,7 +261,7 @@ export default function ShabachPropertyAndArchitecturalPage() {
                   type="text" 
                   value={formPrice}
                   onChange={e => setFormPrice(e.target.value)}
-                  placeholder="e.g. $2,100,000 or $5,000 / month" 
+                  placeholder="e.g. $2,100,000" 
                   className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-emerald-400"
                   required
                 />
@@ -378,7 +301,7 @@ export default function ShabachPropertyAndArchitecturalPage() {
                   type="text" 
                   value={formTag}
                   onChange={e => setFormTag(e.target.value)}
-                  placeholder="e.g. Ready to Move, New Launch, Exclusive" 
+                  placeholder="e.g. Ready to Move" 
                   className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-emerald-400"
                 />
               </div>
@@ -430,19 +353,12 @@ export default function ShabachPropertyAndArchitecturalPage() {
                   rows={3}
                   value={formDescription}
                   onChange={e => setFormDescription(e.target.value)}
-                  placeholder="Detail architectural highlights, interior specifications, and location amenities..."
+                  placeholder="Detail architectural highlights..."
                   className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-emerald-400"
                 />
               </div>
 
               <div className="md:col-span-3 flex justify-end gap-3 pt-2">
-                <button 
-                  type="button" 
-                  onClick={resetForm}
-                  className="px-6 py-3 rounded-full text-xs font-medium text-slate-400 hover:text-white transition"
-                >
-                  Reset
-                </button>
                 <button 
                   type="submit"
                   className="px-8 py-3 rounded-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold text-xs transition flex items-center gap-2 shadow-md"
@@ -456,10 +372,8 @@ export default function ShabachPropertyAndArchitecturalPage() {
         </section>
       )}
 
-      {/* 4. MAIN PROPERTY DIRECTORY */}
+      {/* MAIN PROPERTY DIRECTORY */}
       <section id="properties" className="py-16 px-6 max-w-7xl mx-auto">
-        
-        {/* Controls & Filters Bar */}
         <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm mb-12">
           <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
             
@@ -514,7 +428,6 @@ export default function ShabachPropertyAndArchitecturalPage() {
           </div>
         </div>
 
-        {/* Directory Grid Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
             <h2 className="text-2xl md:text-3xl font-light text-slate-900">
@@ -522,14 +435,14 @@ export default function ShabachPropertyAndArchitecturalPage() {
             </h2>
             <p className="text-xs text-slate-500 mt-1">Showing {filteredProperties.length} properties</p>
           </div>
-          {isAdminMode && (
-            <span className="text-xs font-medium text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
-              Admin Mode: Click Edit/Delete on cards below
-            </span>
-          )}
+          <button 
+            onClick={() => setIsAdminMode(!isAdminMode)}
+            className="text-xs font-semibold px-4 py-2 rounded-full bg-slate-100 hover:bg-slate-200 transition text-slate-700"
+          >
+            {isAdminMode ? 'Exit Admin Mode' : 'Admin Portal'}
+          </button>
         </div>
 
-        {/* Property Grid */}
         {filteredProperties.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-3xl border border-slate-100">
             <Building2 className="w-12 h-12 text-slate-300 mx-auto mb-3" />
@@ -544,7 +457,6 @@ export default function ShabachPropertyAndArchitecturalPage() {
                 className="bg-white rounded-3xl overflow-hidden border border-slate-100 hover:shadow-xl transition duration-300 group flex flex-col justify-between"
               >
                 <div>
-                  {/* Image Container */}
                   <div className="relative h-64 overflow-hidden bg-slate-100">
                     <img 
                       src={prop.image} 
@@ -569,7 +481,6 @@ export default function ShabachPropertyAndArchitecturalPage() {
                     </div>
                   </div>
 
-                  {/* Body Content */}
                   <div className="p-6">
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="font-semibold text-base text-slate-900">
@@ -596,7 +507,6 @@ export default function ShabachPropertyAndArchitecturalPage() {
                   </div>
                 </div>
 
-                {/* Footer Action Buttons */}
                 <div className="px-6 pb-6 pt-2 border-t border-slate-50/50 flex items-center justify-between gap-2">
                   {isAdminMode ? (
                     <div className="flex items-center justify-between w-full gap-2">
@@ -609,15 +519,14 @@ export default function ShabachPropertyAndArchitecturalPage() {
                       <button 
                         onClick={() => handleDeleteProperty(prop.id)}
                         className="py-2 px-3 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 text-xs font-semibold flex items-center justify-center transition"
-                        title="Delete Property"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   ) : (
                     <button 
-                      onClick={() => setSelectedProperty(prop)}
-                      className="w-full py-2.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition flex items-center justify-center gap-2"
+                      onClick={() => handleOpenModal(prop)}
+                      className="w-full py-2.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition flex items-center justify-center gap-2 cursor-pointer"
                     >
                       View Details & Inquiry <ArrowUpRight className="w-3.5 h-3.5" />
                     </button>
@@ -629,10 +538,9 @@ export default function ShabachPropertyAndArchitecturalPage() {
         )}
       </section>
 
-      {/* 5. ARCHITECTURAL SERVICES STUDIO */}
-      <section id="architecture" className="py-24 px-6 bg-[#0D131A] text-white relative">
+      {/* ARCHITECTURAL STUDIO */}
+      <section className="py-24 px-6 bg-[#0D131A] text-white relative">
         <div className="max-w-7xl mx-auto">
-          
           <div className="max-w-2xl mb-16">
             <span className="text-[10px] font-semibold tracking-widest text-slate-400 uppercase block mb-2">
               Architectural Studio & Design Consultancy
@@ -641,165 +549,195 @@ export default function ShabachPropertyAndArchitecturalPage() {
               Crafting <span className="font-serif italic text-white font-normal">architectural masterworks</span>
             </h2>
             <p className="text-slate-300 text-xs md:text-sm font-light leading-relaxed">
-              In addition to real estate brokerage, Shabach Empire houses an elite architectural practice delivering bespoke residential, commercial, and structural blueprints for visionaries.
+              In addition to real estate brokerage, Shabach Empire houses an elite architectural practice delivering bespoke residential, commercial, and structural blueprints.
             </p>
           </div>
 
-          {/* Architecture Services Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
-            
-            <div className="bg-white/5 border border-white/10 rounded-3xl p-8 hover:bg-white/10 transition">
+            <div className="bg-white/5 border border-white/10 rounded-3xl p-8">
               <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-white mb-6">
                 <Compass className="w-6 h-6" />
               </div>
-              <h3 className="text-lg font-medium text-white mb-3">Architectural Design & Blueprints</h3>
+              <h3 className="text-lg font-medium text-white mb-3">Architectural Design</h3>
               <p className="text-xs text-slate-400 font-light leading-relaxed mb-6">
-                Comprehensive conceptualization, site analysis, elevation plans, and precise construction documentation crafted to modern international standards.
+                Comprehensive conceptualization, site analysis, elevation plans, and precise construction documentation.
               </p>
-              <ul className="space-y-2 text-xs text-slate-300">
-                <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> Structural Engineering</li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> Sustainable Site Planning</li>
-              </ul>
             </div>
-
-            <div className="bg-white/5 border border-white/10 rounded-3xl p-8 hover:bg-white/10 transition">
+            <div className="bg-white/5 border border-white/10 rounded-3xl p-8">
               <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-white mb-6">
                 <Layers className="w-6 h-6" />
               </div>
               <h3 className="text-lg font-medium text-white mb-3">Interior Architecture</h3>
               <p className="text-xs text-slate-400 font-light leading-relaxed mb-6">
-                Space optimization, bespoke spatial flow planning, material curation, custom lighting design, and artisanal luxury finishes integration.
+                Space optimization, spatial flow planning, material curation, custom lighting design, and artisanal finishes.
               </p>
-              <ul className="space-y-2 text-xs text-slate-300">
-                <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> Custom Joinery & Lighting</li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> Material Sourcing & Curation</li>
-              </ul>
             </div>
-
-            <div className="bg-white/5 border border-white/10 rounded-3xl p-8 hover:bg-white/10 transition">
+            <div className="bg-white/5 border border-white/10 rounded-3xl p-8">
               <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-white mb-6">
                 <Ruler className="w-6 h-6" />
               </div>
-              <h3 className="text-lg font-medium text-white mb-3">3D Photorealistic Visualization</h3>
+              <h3 className="text-lg font-medium text-white mb-3">3D Visualization</h3>
               <p className="text-xs text-slate-400 font-light leading-relaxed mb-6">
-                High-definition 3D rendering, virtual walkthrough animations, and BIM modeling allowing developers and owners to experience projects prior to build.
-              </p>
-              <ul className="space-y-2 text-xs text-slate-300">
-                <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> VR Architectural Tours</li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> BIM Modeling</li>
-              </ul>
-            </div>
-
-          </div>
-
-          {/* Architectural Inquiry Box */}
-          <div className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-3xl p-8 md:p-12 border border-white/10 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
-            <div>
-              <span className="text-[10px] uppercase tracking-widest text-emerald-400 font-bold block mb-2">Book a Studio Session</span>
-              <h3 className="text-2xl md:text-3xl font-light text-white mb-4">
-                Have a vision for a custom architectural project?
-              </h3>
-              <p className="text-xs text-slate-300 font-light leading-relaxed">
-                Connect directly with our lead architects to discuss site feasibility, design concepts, project budgeting, and timelines.
+                High-definition 3D rendering, virtual walkthrough animations, and BIM modeling for visionaries.
               </p>
             </div>
-
-            {consultSubmitted ? (
-              <div className="bg-emerald-500/10 border border-emerald-500/30 p-6 rounded-2xl text-center">
-                <CheckCircle2 className="w-10 h-10 text-emerald-400 mx-auto mb-2" />
-                <h4 className="text-base font-semibold text-white">Consultation Request Received</h4>
-                <p className="text-xs text-slate-300 mt-1">Our principal architect will contact you within 24 business hours.</p>
-              </div>
-            ) : (
-              <form onSubmit={(e) => { e.preventDefault(); setConsultSubmitted(true); }} className="flex flex-col gap-3">
-                <input 
-                  type="text" 
-                  value={archConsultName}
-                  onChange={e => setArchConsultName(e.target.value)}
-                  placeholder="Your Full Name" 
-                  className="bg-white/10 border border-white/10 rounded-xl px-4 py-3 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-white/30"
-                  required
-                />
-                <input 
-                  type="email" 
-                  value={archConsultEmail}
-                  onChange={e => setArchConsultEmail(e.target.value)}
-                  placeholder="Your Email Address" 
-                  className="bg-white/10 border border-white/10 rounded-xl px-4 py-3 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-white/30"
-                  required
-                />
-                <select 
-                  value={archConsultScope}
-                  onChange={e => setArchConsultScope(e.target.value)}
-                  className="bg-[#121820] border border-white/10 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-white/30 cursor-pointer"
-                >
-                  <option value="Residential Architecture">Residential Villa Architecture</option>
-                  <option value="Commercial Complex">Commercial & High-Rise Design</option>
-                  <option value="Interior Refurbishment">Luxury Interior Architecture</option>
-                  <option value="Master Planning">Land Master Planning</option>
-                </select>
-                <button 
-                  type="submit"
-                  className="bg-white text-slate-900 font-semibold text-xs py-3.5 rounded-xl hover:bg-slate-100 transition mt-1"
-                >
-                  Submit Inquiry
-                </button>
-              </form>
-            )}
           </div>
-
         </div>
       </section>
 
-      {/* 6. PROPERTY DETAIL MODAL */}
+      {/* ENHANCED MINIMALIST PROPERTY DETAIL MODAL POP-UP */}
       {selectedProperty && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 md:p-8 relative text-slate-900 shadow-2xl">
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4 md:p-6 overflow-y-auto">
+          <div className="bg-[#FDFBF7] text-[#121820] rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6 md:p-10 relative shadow-2xl border border-slate-200">
+            
+            {/* Close Button */}
             <button 
               onClick={() => setSelectedProperty(null)}
-              className="absolute top-6 right-6 p-2 rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200 transition"
+              className="absolute top-6 right-6 p-2 rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200 transition cursor-pointer z-10"
             >
               <X className="w-5 h-5" />
             </button>
 
-            <div className="h-64 rounded-2xl overflow-hidden mb-6 bg-slate-100">
-              <img src={selectedProperty.image} alt={selectedProperty.title} className="w-full h-full object-cover" />
+            {/* Modal Header */}
+            <div className="mb-6 pr-12">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 bg-slate-200/60 px-3 py-1 rounded-full">
+                {selectedProperty.category} • {selectedProperty.tag}
+              </span>
+              <h2 className="text-2xl md:text-3xl font-light mt-3 mb-1 text-slate-900">{selectedProperty.title}</h2>
+              <p className="text-xs text-slate-500 flex items-center gap-1">
+                <MapPin className="w-3.5 h-3.5 text-slate-400" /> {selectedProperty.location}
+              </p>
             </div>
 
-            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 bg-slate-100 px-3 py-1 rounded-full">
-              {selectedProperty.category} • {selectedProperty.tag}
-            </span>
+            {/* INLINE IMAGE GALLERY VIEWER */}
+            <div className="mb-8">
+              <div className="relative h-72 md:h-[400px] rounded-2xl overflow-hidden mb-3 bg-slate-100 border border-slate-200 shadow-inner">
+                <img 
+                  src={activeModalImage} 
+                  alt={selectedProperty.title} 
+                  className="w-full h-full object-cover transition duration-300" 
+                />
+                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-[11px] font-semibold text-slate-800 shadow-sm flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-500" /> {selectedProperty.price}
+                </div>
+              </div>
 
-            <h2 className="text-2xl font-semibold mt-3 mb-1 text-slate-900">{selectedProperty.title}</h2>
-            <p className="text-xs text-slate-500 flex items-center gap-1 mb-4">
-              <MapPin className="w-3.5 h-3.5 text-slate-400" /> {selectedProperty.location}
-            </p>
-
-            <div className="text-xl font-semibold text-slate-900 mb-6">{selectedProperty.price}</div>
-
-            <div className="grid grid-cols-3 gap-4 bg-slate-50 p-4 rounded-2xl text-xs text-slate-700 mb-6">
-              <div><strong className="block text-slate-900">Bedrooms</strong> {selectedProperty.beds} Beds</div>
-              <div><strong className="block text-slate-900">Bathrooms</strong> {selectedProperty.baths} Baths</div>
-              <div><strong className="block text-slate-900">Total Area</strong> {selectedProperty.sqft}</div>
+              {/* Thumbnails */}
+              {selectedProperty.images && selectedProperty.images.length > 0 && (
+                <div className="grid grid-cols-4 gap-2">
+                  {[selectedProperty.image, ...selectedProperty.images].map((img, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setActiveModalImage(img)}
+                      className={`relative h-20 rounded-xl overflow-hidden border transition ${
+                        activeModalImage === img ? 'border-slate-900 ring-2 ring-slate-900/30' : 'border-slate-200 opacity-60 hover:opacity-100'
+                      }`}
+                    >
+                      <img src={img} alt={`Thumb ${idx}`} className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
-            <h4 className="text-xs font-semibold uppercase text-slate-400 tracking-wider mb-2">Description</h4>
-            <p className="text-xs text-slate-600 font-light leading-relaxed mb-6">{selectedProperty.description}</p>
+            {/* Modal Content Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              
+              {/* Left Column: Specs, Description, Amenities */}
+              <div className="md:col-span-2 space-y-6">
+                
+                <div className="grid grid-cols-3 gap-3 bg-white p-4 rounded-2xl text-xs text-slate-700 border border-slate-200 shadow-sm text-center">
+                  <div>
+                    <strong className="block text-slate-900 text-sm font-medium">{selectedProperty.beds}</strong> 
+                    <span className="text-[11px] text-slate-500">Bedrooms</span>
+                  </div>
+                  <div>
+                    <strong className="block text-slate-900 text-sm font-medium">{selectedProperty.baths}</strong> 
+                    <span className="text-[11px] text-slate-500">Bathrooms</span>
+                  </div>
+                  <div>
+                    <strong className="block text-slate-900 text-sm font-medium">{selectedProperty.sqft}</strong> 
+                    <span className="text-[11px] text-slate-500">Total Area</span>
+                  </div>
+                </div>
 
-            <div className="flex gap-3">
-              <a 
-                href="#contact" 
-                onClick={() => setSelectedProperty(null)}
-                className="flex-1 py-3 rounded-full bg-slate-900 text-white text-xs font-semibold text-center hover:bg-slate-800 transition"
-              >
-                Schedule Private Viewing
-              </a>
+                <div>
+                  <h4 className="text-xs font-semibold uppercase text-slate-500 tracking-wider mb-2">About Residence</h4>
+                  <p className="text-xs text-slate-600 font-light leading-relaxed">{selectedProperty.description}</p>
+                </div>
+
+                {selectedProperty.amenities && selectedProperty.amenities.length > 0 && (
+                  <div>
+                    <h4 className="text-xs font-semibold uppercase text-slate-500 tracking-wider mb-3">Key Amenities</h4>
+                    <div className="grid grid-cols-2 gap-2">
+                      {selectedProperty.amenities.map(amenity => (
+                        <div key={amenity.id} className="flex items-center gap-2 text-xs text-slate-700 bg-white p-2.5 rounded-xl border border-slate-200">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                          <span>{amenity.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Right Column: Inquiry Form inside Modal */}
+              <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                <div>
+                  <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400 block mb-1">Private Client Services</span>
+                  <h4 className="text-base font-medium text-slate-900 mb-2">Schedule a Viewing</h4>
+                  <p className="text-[11px] text-slate-500 mb-4 font-light">
+                    Connect directly with our advisory team for this residence.
+                  </p>
+                </div>
+
+                {inquirySubmitted ? (
+                  <div className="bg-emerald-50 border border-emerald-200 p-4 rounded-xl text-center">
+                    <CheckCircle2 className="w-6 h-6 text-emerald-600 mx-auto mb-1" />
+                    <h5 className="text-xs font-semibold text-slate-900">Inquiry Confirmed</h5>
+                    <p className="text-[11px] text-slate-600 mt-0.5">We will contact you shortly.</p>
+                  </div>
+                ) : (
+                  <form onSubmit={(e) => { e.preventDefault(); if(fullName && email) setInquirySubmitted(true); }} className="space-y-3">
+                    <input 
+                      type="text" 
+                      value={fullName}
+                      onChange={e => setFullName(e.target.value)}
+                      placeholder="Your Full Name *" 
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-slate-400"
+                      required
+                    />
+                    <input 
+                      type="email" 
+                      value={email}
+                      onChange={e => setEmail(e.target.value)}
+                      placeholder="Email Address *" 
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-slate-400"
+                      required
+                    />
+                    <input 
+                      type="tel" 
+                      value={phone}
+                      onChange={e => setPhone(e.target.value)}
+                      placeholder="Phone Number" 
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-slate-400"
+                    />
+                    <button 
+                      type="submit"
+                      className="w-full py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition flex items-center justify-center gap-2 cursor-pointer shadow-md"
+                    >
+                      <Calendar className="w-3.5 h-3.5" /> Request Private Tour
+                    </button>
+                  </form>
+                )}
+              </div>
+
             </div>
+
           </div>
         </div>
       )}
 
-      
     </div>
   );
 }

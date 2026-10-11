@@ -1,12 +1,7 @@
-'use client';
-
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { 
-  Search, 
   MapPin, 
-  Home, 
-  DollarSign, 
   Bed, 
   Bath, 
   Maximize2, 
@@ -14,55 +9,14 @@ import {
   ShieldCheck, 
   Award, 
   Globe2, 
-  Heart,
-  ArrowUpRight
+  ArrowUpRight 
 } from 'lucide-react';
+import { getFeaturedProperties } from '@/actions/properties';
+import HeroSearch from '../components/HeroSearch';
 
-export default function ShabachRealEstateWebsite() {
-  const [activeTab, setActiveTab] = useState<'buy' | 'rent' | 'offplan'>('buy');
-  const [favorites, setFavorites] = useState<number[]>([]);
-
-  const toggleFavorite = (id: number) => {
-    setFavorites(prev => 
-      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
-    );
-  };
-
-  const properties = [
-    {
-      id: 1,
-      title: "Skyline Residences",
-      location: "Ikoyi, Lagos",
-      price: "$1,850,000",
-      tag: "Ready to Move",
-      beds: 3,
-      baths: 3,
-      sqft: "1,850 Sq.Ft",
-      image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=1200"
-    },
-    {
-      id: 2,
-      title: "The Green Villas",
-      location: "Banana Island, Lagos",
-      price: "$2,400,000",
-      tag: "Premium",
-      beds: 4,
-      baths: 4,
-      sqft: "2,600 Sq.Ft",
-      image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&q=80&w=1200"
-    },
-    {
-      id: 3,
-      title: "Shabach Heights",
-      location: "Victoria Island, Lagos",
-      price: "$1,200,000",
-      tag: "New Launch",
-      beds: 2,
-      baths: 2,
-      sqft: "1,200 Sq.Ft",
-      image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=1200"
-    }
-  ];
+export default async function ShabachRealEstateWebsite() {
+  const result = await getFeaturedProperties(6);
+  const properties = result.success && result.data ? result.data : [];
 
   return (
     <div className="bg-[#FDFBF7] text-[#121820] font-sans antialiased selection:bg-slate-200 selection:text-[#121820]">
@@ -95,60 +49,8 @@ export default function ShabachRealEstateWebsite() {
             </div>
           </div>
 
-          {/* Search Pill Container */}
-          <div className="max-w-3xl bg-white/10 backdrop-blur-md p-3 md:p-4 rounded-3xl border border-white/10">
-            <div className="flex gap-2 mb-3">
-              {(['buy', 'rent', 'offplan'] as const).map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`px-4 py-1.5 rounded-full text-[11px] font-medium transition ${
-                    activeTab === tab
-                      ? 'bg-white text-slate-900'
-                      : 'text-slate-300 hover:text-white'
-                  }`}
-                >
-                  {tab === 'buy' ? 'Buy' : tab === 'rent' ? 'Rent' : 'Off-Plan'}
-                </button>
-              ))}
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-2 items-center">
-              <div className="bg-white/10 rounded-2xl p-3 flex items-center gap-2.5">
-                <MapPin className="w-4 h-4 text-slate-300 shrink-0" />
-                <input 
-                  type="text" 
-                  placeholder="Location..."
-                  className="bg-transparent text-xs text-white focus:outline-none w-full placeholder:text-slate-400"
-                />
-              </div>
-
-              <div className="bg-white/10 rounded-2xl p-3 flex items-center gap-2.5">
-                <Home className="w-4 h-4 text-slate-300 shrink-0" />
-                <select className="bg-transparent text-xs text-white focus:outline-none w-full cursor-pointer border-none">
-                  <option className="bg-[#0D131A] text-white">Property Type</option>
-                  <option className="bg-[#0D131A] text-white">Villa</option>
-                  <option className="bg-[#0D131A] text-white">Penthouse</option>
-                  <option className="bg-[#0D131A] text-white">Apartment</option>
-                </select>
-              </div>
-
-              <div className="bg-white/10 rounded-2xl p-3 flex items-center gap-2.5">
-                <DollarSign className="w-4 h-4 text-slate-300 shrink-0" />
-                <select className="bg-transparent text-xs text-white focus:outline-none w-full cursor-pointer border-none">
-                  <option className="bg-[#0D131A] text-white">Price Range</option>
-                  <option className="bg-[#0D131A] text-white">$200k - $500k</option>
-                  <option className="bg-[#0D131A] text-white">$500k - $1.5M</option>
-                  <option className="bg-[#0D131A] text-white">$1.5M+</option>
-                </select>
-              </div>
-
-              <button className="h-full py-3.5 bg-white text-slate-900 font-semibold text-xs rounded-2xl hover:bg-slate-100 transition flex items-center justify-center gap-2">
-                <Search className="w-3.5 h-3.5" />
-                Search
-              </button>
-            </div>
-          </div>
+          {/* Interactive Hero Search Bar */}
+          <HeroSearch />
         </div>
       </section>
 
@@ -213,46 +115,48 @@ export default function ShabachRealEstateWebsite() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {properties.map((prop) => (
-            <div 
-              key={prop.id} 
-              className="bg-white rounded-3xl overflow-hidden hover:shadow-lg transition duration-300 group border border-slate-100"
-            >
-              <div className="relative h-64 overflow-hidden">
-                <img 
-                  src={prop.image} 
-                  alt={prop.title} 
-                  className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-                />
-                <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-medium text-slate-800">
-                  {prop.tag}
+        {properties.length === 0 ? (
+          <div className="text-slate-400 text-xs text-center py-12">
+            No properties found in the database.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {properties.map((prop) => (
+              <div 
+                key={prop.id} 
+                className="bg-white rounded-3xl overflow-hidden hover:shadow-lg transition duration-300 group border border-slate-100"
+              >
+                <div className="relative h-64 overflow-hidden">
+                  <img 
+                    src={prop.coverImage} 
+                    alt={prop.title} 
+                    className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                  />
+                  <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-medium text-slate-800">
+                    {prop.type ? prop.type.replace('_', ' ') : 'Luxury'}
+                  </div>
                 </div>
-                <button 
-                  onClick={() => toggleFavorite(prop.id)}
-                  className="absolute top-4 right-4 p-2 rounded-full bg-white/80 backdrop-blur-md text-slate-700 hover:text-red-500 transition"
-                >
-                  <Heart className={`w-3.5 h-3.5 ${favorites.includes(prop.id) ? 'fill-red-500 text-red-500' : ''}`} />
-                </button>
-              </div>
 
-              <div className="p-6">
-                <h3 className="font-semibold text-base text-slate-900 mb-1">
-                  {prop.title}
-                </h3>
-                <p className="text-xs text-slate-500 flex items-center gap-1 mb-4">
-                  <MapPin className="w-3 h-3 text-slate-400" /> {prop.location}
-                </p>
+                <div className="p-6">
+                  <Link href={`/properties/${prop.slug}`}>
+                    <h3 className="font-semibold text-base text-slate-900 mb-1 hover:text-slate-600 transition">
+                      {prop.title}
+                    </h3>
+                  </Link>
+                  <p className="text-xs text-slate-500 flex items-center gap-1 mb-4">
+                    <MapPin className="w-3 h-3 text-slate-400" /> {prop.city}, {prop.country}
+                  </p>
 
-                <div className="flex items-center justify-between pt-4 border-t border-slate-100 text-xs text-slate-500">
-                  <span className="flex items-center gap-1"><Bed className="w-3.5 h-3.5 text-slate-400" /> {prop.beds} Beds</span>
-                  <span className="flex items-center gap-1"><Bath className="w-3.5 h-3.5 text-slate-400" /> {prop.baths} Baths</span>
-                  <span className="flex items-center gap-1"><Maximize2 className="w-3.5 h-3.5 text-slate-400" /> {prop.sqft}</span>
+                  <div className="flex items-center justify-between pt-4 border-t border-slate-100 text-xs text-slate-500">
+                    <span className="flex items-center gap-1"><Bed className="w-3.5 h-3.5 text-slate-400" /> {prop.bedrooms} Beds</span>
+                    <span className="flex items-center gap-1"><Bath className="w-3.5 h-3.5 text-slate-400" /> {prop.bathrooms} Baths</span>
+                    <span className="flex items-center gap-1"><Maximize2 className="w-3.5 h-3.5 text-slate-400" /> {prop.sqft} sqft</span>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* 4. ABOUT SECTION */}
