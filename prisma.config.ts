@@ -12,7 +12,7 @@ export default defineConfig({
   },
 
   datasource: {
-    url: env("DIRECT_URL"),
+    url: env("DIRECT_URL") || env("DATABASE_URL"),
     },
 
 });
