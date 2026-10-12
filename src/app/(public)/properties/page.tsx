@@ -34,7 +34,7 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
     type: (p.listingType === ListingType.FOR_RENT ? 'rent' : p.listingType === ListingType.SHORT_LET ? 'offplan' : 'buy') as 'buy' | 'rent' | 'offplan',
     category: (p.type.includes('VILLA') ? 'Villa' : p.type.includes('PENTHOUSE') ? 'Penthouse' : 'Apartment') as 'Villa' | 'Penthouse' | 'Apartment' | 'Commercial' | 'Land',
     tag: p.isFeatured ? 'Featured' : 'Available',
-    beds: p.bedrooms,
+    beds: p.bedrooms ?? 0,
     baths: p.bathrooms,
     sqft: `${p.sqft} Sq.Ft`,
     image: p.coverImage,
@@ -42,5 +42,5 @@ export default async function PropertiesPage({ searchParams }: PropertiesPagePro
     featured: p.isFeatured,
   }));
 
-  return <PropertiesClient initialProperties={formattedProperties} />;
+ return <PropertiesClient initialProperties={formattedProperties as any} />;
 }

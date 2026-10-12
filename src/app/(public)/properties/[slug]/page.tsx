@@ -9,14 +9,24 @@ interface PropertyDetailPageProps {
 export default async function PropertyDetailPage({ params }: PropertyDetailPageProps) {
   const { slug } = await params;
   
-  // Fetch live property from Supabase by slug
   const result = await getPropertyBySlug(slug);
 
   if (!result.success || !result.data) {
     notFound();
   }
 
-  const property = result.data;
+  const rawProperty = result.data;
 
-  return <PropertyDetailClient property={property} />;
+  const property = {
+    ...rawProperty,
+    price: Number(rawProperty.price),
+    units: (rawProperty.units || []).map((u: any) => ({
+      ...u,
+      salePrice: u.salePrice ? Number(u.salePrice) : 0,
+      nightlyRate: u.nightlyRate ? Number(u.nightlyRate) : 0,
+    })),
+  };
+
+  const Component = PropertyDetailClient as any;
+  return <Component property={property} />;
 }
